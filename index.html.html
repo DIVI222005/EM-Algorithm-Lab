@@ -1,0 +1,341 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>EM Algorithm Lab</title>
+<style>
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:70px}
+body{margin:0;background:#050816;color:#e6edff;font:15px/1.6 system-ui,-apple-system,sans-serif;color-scheme:dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+#bg{position:fixed;inset:0;z-index:-1;width:100%;height:100%}
+nav{position:sticky;top:0;z-index:9;display:flex;gap:6px;overflow-x:auto;padding:10px 14px;background:#050816cc;backdrop-filter:blur(10px);border-bottom:1px solid #1e2a5a}
+nav a{color:#8b9bc7;text-decoration:none;white-space:nowrap;padding:4px 10px;border-radius:99px;font-size:13px;border:1px solid transparent}nav a:hover{color:#22d3ee;border-color:#22d3ee55}
+nav b{margin-left:auto;color:#a3e635;white-space:nowrap}
+section{max-width:1100px;margin:0 auto;padding:44px 16px}
+h1{font-size:clamp(34px,7vw,66px);line-height:1.05;margin:0 0 10px;background:linear-gradient(90deg,#22d3ee,#e879f9);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:26px;margin:0 0 6px}h3{margin:0 0 6px}.tag{color:#22d3ee;font:12px monospace;letter-spacing:.15em}
+.card{background:linear-gradient(145deg,#0e1640cc,#080d28cc);border:1px solid #1e2a5a;border-radius:16px;padding:16px;box-shadow:0 0 30px #22d3ee14;transition:transform .15s;display:block;color:inherit;text-decoration:none}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));perspective:900px;margin-top:14px}
+canvas.pn{width:100%;aspect-ratio:1;background:#060b24;border-radius:10px;display:block;touch-action:none}
+button{background:#12205a;color:#e6edff;border:1px solid #22d3ee66;border-radius:10px;padding:8px 14px;font:inherit;cursor:pointer}button:hover{background:#1b3280;box-shadow:0 0 14px #22d3ee55}button:disabled{opacity:.4}button.p{background:linear-gradient(90deg,#0891b2,#a21caf);border:0}
+input[type=range]{width:100%;accent-color:#22d3ee}input[type=number],select{background:#060b24;color:#fff;border:1px solid #1e2a5a;border-radius:8px;padding:6px;width:110px;font:inherit}select{width:auto}
+.eq{font-family:Cambria,'Times New Roman',serif;font-size:18px;background:#060b24;border-left:3px solid #e879f9;padding:8px 12px;margin:8px 0;overflow-x:auto;white-space:nowrap}
+.tw{overflow-x:auto}table{border-collapse:collapse;font:13px monospace;width:100%}td,th{padding:3px 8px;border-bottom:1px solid #1e2a5a;text-align:right}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}.m{color:#8b9bc7;font-size:13px}label{font-size:13px;color:#8b9bc7;display:block}
+.bd{opacity:.25;filter:grayscale(1)}.bd.on{opacity:1;filter:none}.ok{color:#a3e635}.no{color:#fb7185}pre{overflow-x:auto}
+canvas.w{width:100%;border-radius:10px;display:block;background:#060b24}.tt{cursor:help;border-bottom:1px dotted #e879f9;color:#f0abfc}.ms{padding:3px 12px;border:1px solid #1e2a5a;border-radius:99px;color:#5b6a9a;font-size:13px}.ms.on{color:#a3e635;border-color:#a3e635;box-shadow:0 0 12px #a3e63566}
+</style></head><body><canvas id="bg"></canvas>
+<nav><a href="#hero">Home</a><a href="#learn">01–04 Learn</a><a href="#lab">05 Simulation</a><a href="#math">06 Math</a><a href="#apply">07 Apply</a><a href="#studio">EM Studio</a><a href="#real">Real example</a><a href="#seg">3D Customers</a><a href="#arena">08 Arena</a><span id="lv" class="m" style="margin-left:auto;white-space:nowrap"></span><b id="sc" style="margin-left:8px"></b></nav>
+<section id="hero" style="padding-top:70px"><div class="tag">DARK MATTER · HIDDEN VARIABLES · LIKELIHOOD</div><h1>EM Algorithm Lab</h1>
+<p style="max-width:620px;font-size:18px;color:#b6c3ee">Discover hidden patterns. Estimate probabilities. Improve predictions. Learn the Expectation-Maximization algorithm by seeing it, touching it, and playing it.</p>
+<div class="grid"><a class="card" data-t href="#learn"><b style="color:#22d3ee">Learn</b><br><span class="m">Visual storytelling</span></a><a class="card" data-t href="#lab"><b style="color:#e879f9">Experiment</b><br><span class="m">Live Gaussian mixture</span></a><a class="card" data-t href="#math"><b style="color:#a3e635">Calculate</b><br><span class="m">Worked numeric example</span></a><a class="card" data-t href="#arena"><b style="color:#fbbf24">Play</b><br><span class="m">4 games, points &amp; badges</span></a></div>
+<div class="tag" style="margin-top:22px">MISSION MAP · stations light up as you complete them</div><div id="mm" class="row"><span class="ms" data-ms="learn">🔍 Hidden data</span><span class="ms" data-ms="E">🎯 E-step</span><span class="ms" data-ms="M">⚙️ M-step</span><span class="ms" data-ms="C">📈 Convergence</span><span class="ms" data-ms="math">🧮 Mathematics</span><span class="ms" data-ms="real">🌍 Real world</span><span class="ms" data-ms="games">🎮 Challenge</span><span class="ms" data-ms="master">👑 EM Master</span></div>
+<button class="p" id="pm0" style="margin-top:12px">🎓 Presentation mode</button></section>
+
+<section id="learn"><div class="tag">MODULE 01</div><h2>The Mystery of Hidden Data</h2>
+<p>Imagine three types of customers mixed in one dataset, but nobody wrote down which type each customer is. The group label is a <b>latent (hidden) variable</b>. We only see the points, and we want to find the groups <i>and</i> describe each one.</p>
+<div class="card" data-t style="max-width:420px"><canvas id="m1c" class="pn"></canvas><div class="row"><button class="p" id="m1b">Reveal hidden labels</button><span class="m">Real life never gives you this button.</span></div></div>
+<div style="height:36px"></div><div class="tag">MODULES 02 + 03</div><h2>Gaussian Mixtures &amp; the E-step</h2>
+<p>A <b>Gaussian Mixture Model</b> says each point came from one of K bell curves, each with a mean μ, a spread σ² and a mixing weight π (how often it is chosen). The <b>E-step</b> asks: given the current curves, how responsible is each curve for a point x? Move the white probe (or click the graph) and watch the probabilities change.</p>
+<div class="card"><canvas id="gc0" class="w"></canvas><div class="grid" style="perspective:none;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+<div><label>μ A</label><input id="g1" type="range" min="0" max="10" step=".1" value="3"></div><div><label>μ B</label><input id="g2" type="range" min="0" max="10" step=".1" value="7"></div>
+<div><label>σ (spread)</label><input id="g3" type="range" min=".4" max="3" step=".05" value="1.2"></div><div><label>π A (weight)</label><input id="g4" type="range" min=".05" max=".95" step=".05" value=".5"></div>
+<div><label>probe x</label><input id="g5" type="range" min="0" max="10" step=".05" value="5"></div></div><div id="wo"></div></div>
+<div style="height:36px"></div><div class="tag">MODULE 04</div><h2>The M-step: Maximization</h2>
+<p>Now pretend the responsibilities are right and refit each curve. Every point votes for each cluster in proportion to its responsibility, so the new mean is a <b>weighted average</b>, the new variance a <b>weighted spread</b>, and the new weight the cluster’s <b>share of total responsibility</b>. Curves slide toward the points they own, and then the E-step changes its mind again. Repeat until nothing moves.</p>
+<div class="card"><canvas id="mv" class="w"></canvas><label>Morph the curves from old parameters (dashed) to the M-step result. Dots are coloured by responsibility. Press Next iteration in Module 06 to advance.</label><input id="mt" type="range" min="0" max="100" value="0"></div><div class="grid"><div class="card" data-t><b class="ok">E</b> Guess hidden labels softly, using the current parameters.</div><div class="card" data-t><b style="color:#e879f9">M</b> Re-estimate parameters, using those soft labels.</div><div class="card" data-t><b style="color:#22d3ee">↻</b> Each loop never lowers the likelihood.</div></div></section>
+
+<section id="lab"><div class="tag">MODULE 05</div><h2>Watch EM Learn</h2>
+<p>A real 2D Gaussian mixture (isotropic covariance) fitted live on 180 points. <b>Drag the numbered means</b> in panel ①. Try K=2 on three blobs, or put two means on the same blob.</p>
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))"><div class="card"><b>① Data</b> <span class="m">drag the means</span><canvas id="p1" class="pn"></canvas></div><div class="card"><b>② E-step</b> <span class="m">colour = membership probability</span><canvas id="p2" class="pn"></canvas></div><div class="card"><b>③ M-step</b> <span class="m">Gaussians move (dashed = old mean)</span><canvas id="p3" class="pn"></canvas></div></div>
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))"><div class="card"><div class="row"><label>Clusters K <select id="K"><option>2</option><option selected>3</option></select></label><button id="bX">Reset</button><button id="bN">New data</button></div>
+<label>Initial variance σ²</label><input id="var" type="range" min=".3" max="6" step=".1" value="2.5"><label>Mixing weights (normalized)</label><input id="w0" type="range" min=".1" max="1" step=".05" value=".5"><input id="w1" type="range" min=".1" max="1" step=".05" value=".5"><input id="w2" type="range" min=".1" max="1" step=".05" value=".5">
+<div class="row"><button id="bE">E-step</button><button id="bM">M-step</button><button id="bI">1 iteration</button><button class="p" id="bR">▶ Run to convergence</button></div></div>
+<div class="card"><canvas id="ch" class="w"></canvas><div class="m">Observed-data log-likelihood per iteration (it never decreases):</div><div id="inf" class="tw"></div></div></div><div class="card" style="margin-top:14px"><b>3D density surface</b> <span class="m">the landscape the model currently believes in. Peaks move and sharpen as EM learns.</span><canvas id="s3" width="600" height="300" class="w"></canvas></div></section>
+
+<section id="math"><div class="tag">MODULE 06</div><h2>The Mathematics</h2>
+<p>Model: p(x) = Σₖ πₖ 𝒩(x | μₖ, σ²ₖ). Latent label zᵢ ∈ {1…K}. Maximizing log L directly is hard (a log of a sum), so EM alternates two easy steps:</p>
+<div class="eq">E: <span class="tt" data-tip="Responsibility: the probability (0 to 1) that point i came from cluster k, given the current parameters.">γᵢₖ</span> = <span class="tt" data-tip="Mixing weight: how often cluster k is chosen. All the weights add up to 1.">πₖ</span> <span class="tt" data-tip="Gaussian density: how likely the point is under cluster k’s bell curve. Close to the mean means high.">𝒩(xᵢ|μₖ,σ²ₖ)</span> / Σⱼ πⱼ 𝒩(xᵢ|μⱼ,σ²ⱼ)</div>
+<div class="eq">M: <span class="tt" data-tip="Effective number of points owned by cluster k: a sum of fractions, so it need not be a whole number.">Nₖ</span> = Σᵢ γᵢₖ &nbsp; <span class="tt" data-tip="New mean: the responsibility-weighted average of the data.">μₖ</span> = Σᵢ γᵢₖxᵢ / Nₖ &nbsp; <span class="tt" data-tip="New variance: the weighted average squared distance from the new mean.">σ²ₖ</span> = Σᵢ γᵢₖ(xᵢ−μₖ)² / Nₖ &nbsp; <span class="tt" data-tip="New weight: the cluster’s share of all points.">πₖ</span> = Nₖ / n</div><div id="mtip" class="m" style="padding:8px 12px;background:#0b1340;border-radius:10px;border:1px solid #1e2a5a">👆 Hover or tap any pink dotted symbol in the equations to see what it means.</div>
+<div class="eq"><span class="tt" data-tip="Log-likelihood: how well the model explains the data. Each EM round can only raise it or keep it the same.">log L</span> = Σᵢ log Σₖ πₖ 𝒩(xᵢ|μₖ,σ²ₖ)</div>
+<p class="m">In 2D isotropic form the variance update divides by 2Nₖ. Each EM round raises a lower bound on log L that touches it at the current parameters, so log L never decreases (it can stop at a local optimum).</p>
+<h3 style="margin-top:20px">🧮 Interactive worked example</h3>
+<p>Everything below is live. Drag any slider (data points x₁–x₅ or the parameters) and every curve, number and equation updates. Click a dot (or a button) to follow one point’s responsibility step by step, then apply the M-step to see the parameters update.</p>
+<div class="card"><canvas id="mc" class="w" style="cursor:pointer"></canvas><div class="grid" style="perspective:none;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))" id="msl"></div>
+<div class="row"><button class="p" id="wn">⚙ Apply M-step</button><button id="w10">Run 10 iterations</button><button id="wr">Restart</button><span class="m" id="mit"></span></div></div>
+<div class="grid" style="perspective:none;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))"><div class="card"><b>E-step for one point</b><div class="row" id="mpt"></div><div id="we" class="eq" style="white-space:normal;font-size:15px"></div></div><div class="card"><b>M-step: the new parameters</b><div id="wm" class="eq" style="white-space:normal;font-size:15px"></div></div></div>
+<div class="card" style="margin-top:14px"><b>All responsibilities</b><div id="wx" class="tw"></div></div></section>
+
+<section id="apply"><div class="tag">MODULE 07</div><h2>Real-World Applications</h2><div class="grid">
+<div class="card" data-t><b>🛍️ Customer segmentation</b><canvas data-a="0" class="w"></canvas><span class="m">Soft membership finds shoppers who sit between groups.</span></div>
+<div class="card" data-t><b>🧩 Missing data</b><canvas data-a="1" class="w"></canvas><span class="m">Missing values are latent variables. E-step fills expectations, M-step refits.</span></div>
+<div class="card" data-t><b>🖼️ Image processing</b><canvas data-a="2" class="w"></canvas><span class="m">Colour clustering and background/foreground segmentation.</span></div>
+<div class="card" data-t><b>🎙️ Speech recognition</b><canvas data-a="3" class="w"></canvas><span class="m">GMMs model sound features inside Hidden Markov Models (Baum-Welch is EM).</span></div></div></section>
+
+<section id="studio"><div class="tag">EM STUDIO · LEARN + EXPERIMENT + BOSS</div><h2>Train, Break and Master EM</h2>
+<p>Drag a <b>circle</b> to move a curve’s mean μ, drag a <b>white diamond</b> to change its spread σ, click any <b>data point</b> to see its hidden probabilities, and replay any iteration from the timeline. Try bad starts to break the model.</p>
+<div class="card"><canvas id="stc" class="w" style="touch-action:none"></canvas>
+<div class="row"><label style="display:inline">π A <input id="stw" type="range" min=".1" max=".9" step=".05" value=".5" style="width:120px"></label><button id="stE">▶ Watch E-step</button><button id="stM">⚙ Watch M-step</button><button class="p" id="stR">Run to convergence</button><button id="stX">Reset</button><button id="stN">Random start</button><button id="stB">👾 Boss: train it yourself</button></div>
+<div id="stT" class="row"></div><div id="stW" class="m"></div></div>
+<div class="card" style="margin-top:14px"><b>🔬 Math ↔ Visualization</b> <span class="m">hover a symbol to light it up in the graph above</span><div class="eq" id="stEq"><span data-h="g">γᵢₖ</span> = <span data-h="p">πₖ</span>𝒩(xᵢ | <span data-h="m">μₖ</span>, <span data-h="s">σ²ₖ</span>) / Σⱼ πⱼ𝒩(xᵢ | μⱼ, σ²ⱼ)</div>
+<div class="row"><button id="stQ">🔮 Predict μ₁ &amp; run</button><select id="stWi"><option value="">🧪 What if…</option><option value="a">μ₁ and μ₂ almost equal</option><option value="b">Huge variance</option><option value="c">Variance almost zero</option><option value="d">One weight = 0.95</option><option value="e">Add an outlier</option><option value="f">Terrible initialization</option></select><button id="stK">⚔️ EM vs K-Means</button><button id="stZb">🧠 Explain my result</button></div><div id="stZ" class="m"></div><div id="stKm" class="tw"></div></div>
+<div class="card" style="margin-top:14px"><b>💾 Experiment history</b> <span class="m">every converged run is saved</span><div id="stH" class="tw"></div></div>
+<div class="grid" style="perspective:none;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))"><div class="card"><b>Responsibilities</b> <span class="m">cyan C1 · magenta C2</span><canvas id="src" class="w"></canvas></div><div class="card"><b>Log-likelihood</b><canvas id="slc" class="w"></canvas></div></div>
+<div class="grid" style="perspective:none;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))"><div class="card"><b>🧠 Why did EM do this?</b><div id="stY" style="margin-top:6px"></div></div><div class="card"><b>🔵 Selected point</b><div id="stP" style="margin-top:6px">Click a data point above.</div></div></div></section>
+<section id="real"><div class="tag">REAL-WORLD EXAMPLE</div><h2>Finding two hidden groups in height data</h2><p>A health survey measured the heights of 240 adults but never recorded sex. The histogram looks like one lumpy hill. EM figures out that it is really <b>two overlapping groups</b> (for example women and men), without ever seeing a label. The data is simulated to resemble real adult height distributions.</p><div class="card"><canvas id="hc" class="w"></canvas><div class="row"><button id="hs">Run 1 iteration</button><button class="p" id="hr">▶ Run to convergence</button><button id="hx">Reset</button><button id="ht">Show truth</button></div><p class="m">Start: a poor guess (means 155 and 185 cm, wide spread). Each iteration, the E-step splits every bar between the two groups (cyan and magenta share), and the M-step moves each curve to fit the share it owns. Watch the curves slide into place.</p><div id="hi" class="tw"></div></div></section>
+<section id="seg"><div class="tag">REAL-WORLD EXAMPLE 2</div><h2>Customer segmentation in 3D</h2>
+<p>A shop has 180 customers described by <b>age, income and spending score</b>, but no segment labels. EM fits three 3D Gaussian clouds and discovers the groups. <b>Drag the scene to rotate it</b>, press Run, and watch the spheres (the Gaussians) move while the dots take on their membership colours. Data is simulated. Age 18–70, income $15k–$140k, spending score 0–100.</p>
+<div class="card"><canvas id="s3d" class="w" style="touch-action:none;cursor:grab"></canvas>
+<div class="row"><button id="sgE">E-step</button><button id="sgM">M-step</button><button class="p" id="sgR">▶ Run to convergence</button><button id="sgX">Reset</button><button id="sgN">New customers</button><button id="sgA">⟳ Auto-rotate: on</button><button id="sgT">Show true segments</button></div><div id="sgi" class="tw"></div></div></section>
+<section id="arena"><div class="tag">MODULE 08</div><h2>EM Game Arena</h2>
+<div class="row"><button onclick="g1()">🕵️ Detective</button><button onclick="g2()">🎛️ Parameter Master</button><button onclick="g3()">🔢 Beat the Iterations</button><button onclick="g4()">👑 Boss</button></div><div class="card" id="game"></div></section>
+
+<div id="pm" style="display:none;position:fixed;left:0;right:0;bottom:0;z-index:20;background:#0b1340ee;border-top:2px solid #22d3ee;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));backdrop-filter:blur(8px)"><div class="row" style="margin:0"><b id="pt" style="flex:1;min-width:200px"></b><button id="pp">← Back</button><button class="p" id="pn2">Next →</button><button id="px">Exit</button></div></div>
+<script>
+const $=i=>document.getElementById(i),C=['#22d3ee','#e879f9','#a3e635'],CR=[[34,211,238],[232,121,249],[163,230,53]],PI2=Math.PI*2;
+let score=0,bad={};
+const LV=['Hidden Data Explorer','Gaussian Apprentice','E-Step Analyst','M-Step Engineer','EM Researcher','EM MASTER 👑'];
+function award(p,b){score+=p;if(p>0)mark('games');$('lv').textContent='Lv '+(Math.min(5,score/60|0)+1)+' · '+LV[Math.min(5,score/60|0)];if(b!=null)bad[b]=1;$('sc').innerHTML='★ '+score+' '+['🕵️','🎛️','🔢','👑'].map((e,i)=>'<span class="bd'+(bad[i]?' on':'')+'">'+e+'</span>').join('')}
+let seed=7;const rnd=()=>{seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296},gs=()=>Math.sqrt(-2*Math.log(1-rnd()))*Math.cos(PI2*rnd());
+/* 3D background */
+const bg=$('bg'),g=bg.getContext('2d'),P=[];
+for(let k=0;k<3;k++)for(let i=0;i<150;i++)P.push([[-1.2,.2,0],[1.1,.4,.6],[0,-1,-.7]][k].map(v=>v+gs()*.4).concat(k));
+const rs=()=>{bg.width=innerWidth;bg.height=innerHeight};rs();addEventListener('resize',rs);
+function bgl(t){g.clearRect(0,0,bg.width,bg.height);const a=t/5000,ca=Math.cos(a),sa=Math.sin(a),s=Math.min(bg.width,bg.height)*.45;
+P.forEach(p=>{const x=p[0]*ca+p[2]*sa,z=-p[0]*sa+p[2]*ca,f=3/(4+z);g.globalAlpha=.45+.5*f;g.fillStyle=C[p[3]];g.fillRect(bg.width*.5+x*s*f,bg.height*.5+p[1]*s*f,3.5*f+1.5,3.5*f+1.5)});g.globalAlpha=1;requestAnimationFrame(bgl)}
+requestAnimationFrame(bgl);
+document.querySelectorAll('[data-t]').forEach(c=>{c.onmousemove=e=>{const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;c.style.transform='rotateY('+x*10+'deg) rotateX('+-y*10+'deg)'};c.onmouseleave=()=>c.style.transform=''});
+/* data */
+let X=[],T=[];
+function gen(){X=[];T=[];[[2.5,2.8,.9],[7.5,3.2,1.1],[5,7.6,.8]].forEach((q,k)=>{for(let i=0;i<60;i++){X.push([q[0]+gs()*q[2],q[1]+gs()*q[2]]);T.push(k)}})}
+function pan(cv,colf,extra,pre){const W=cv.width=360,c=cv.getContext('2d');c.fillStyle='#060b24';c.fillRect(0,0,W,W);c.strokeStyle='#14204d';c.lineWidth=1;for(let i=1;i<10;i++){c.beginPath();c.moveTo(i*36,0);c.lineTo(i*36,W);c.moveTo(0,i*36);c.lineTo(W,i*36);c.stroke()}
+pre&&pre(c);X.forEach((p,i)=>{c.fillStyle=colf(i);c.beginPath();c.arc(p[0]*36,360-p[1]*36,3.5,0,PI2);c.fill()});extra&&extra(c)}
+let rev=0;const m1d=()=>pan($('m1c'),i=>rev?C[T[i]]:'#9fb0e8');
+$('m1b').onclick=()=>{rev=!rev;$('m1b').textContent=rev?'Hide labels':'Reveal hidden labels';m1d()};
+/* 1D plot + E-step widget */
+function plot1d(cv,m1,m2,sd,w,x){const W=cv.width=600,H=cv.height=220,c=cv.getContext('2d'),f=(t,m)=>Math.exp(-((t-m)**2)/(2*sd*sd))/(sd*2.5066),sx=t=>t*W/10,sy=v=>H-24-v*(H-44)/.9;c.fillStyle='#060b24';c.fillRect(0,0,W,H);
+[[m1,w,0],[m2,1-w,1]].forEach(([m,q,k])=>{c.beginPath();c.moveTo(0,H-24);for(let i=0;i<=200;i++)c.lineTo(sx(i/20),sy(q*f(i/20,m)));c.lineTo(W,H-24);c.fillStyle=C[k]+'44';c.fill();c.strokeStyle=C[k];c.lineWidth=2;c.stroke()});
+c.beginPath();for(let i=0;i<=200;i++){const t=i/20,y=sy(w*f(t,m1)+(1-w)*f(t,m2));i?c.lineTo(sx(t),y):c.moveTo(sx(t),y)}c.strokeStyle='#fff9';c.lineWidth=1;c.stroke();
+c.fillStyle='#8b9bc7';c.font='11px monospace';c.textAlign='center';for(let i=0;i<=10;i++)c.fillText(i,sx(i),H-8);
+c.strokeStyle='#fff';c.setLineDash([5,4]);c.beginPath();c.moveTo(sx(x),6);c.lineTo(sx(x),H-24);c.stroke();c.setLineDash([]);
+const a=w*f(x,m1),b=(1-w)*f(x,m2);return{a,b,r:a/(a+b)}}
+function wu(){const v=i=>+$('g'+i).value,q=plot1d($('gc0'),v(1),v(2),v(3),v(4),v(5)),bar=(n,k,p)=>'<div class="row"><b style="color:'+C[k]+'">'+n+'</b><div style="flex:1;background:#14204d;border-radius:6px"><div style="height:14px;border-radius:6px;background:'+C[k]+';width:'+p*100+'%"></div></div><b>'+(p*100).toFixed(1)+'%</b></div>';
+$('wo').innerHTML=bar('A',0,q.r)+bar('B',1,1-q.r)+'<div class="eq" style="font-size:15px">γ(A) = '+q.a.toFixed(4)+' / ('+q.a.toFixed(4)+' + '+q.b.toFixed(4)+') = '+q.r.toFixed(3)+'</div>'}
+[1,2,3,4,5].forEach(i=>$('g'+i).oninput=wu);$('gc0').onclick=e=>{const r=e.target.getBoundingClientRect();$('g5').value=((e.clientX-r.left)/r.width*10).toFixed(2);wu()};
+/* 2D EM lab */
+const L={mu:[],v:[],pi:[],R:null,hist:[],old:null,busy:0,ph:''};
+function dens(i,k){const d=(X[i][0]-L.mu[k][0])**2+(X[i][1]-L.mu[k][1])**2;return Math.log(L.pi[k])-d/(2*L.v[k])-Math.log(PI2*L.v[k])}
+function ll(){let s=0;for(let i=0;i<X.length;i++){const l=L.mu.map((_,k)=>dens(i,k)),m=Math.max(...l);s+=m+Math.log(l.reduce((a,b)=>a+Math.exp(b-m),0))}return s}
+function E(){L.R=X.map((_,i)=>{const l=L.mu.map((_,k)=>dens(i,k)),m=Math.max(...l),e=l.map(a=>Math.exp(a-m)),s=e.reduce((a,b)=>a+b);return e.map(a=>a/s)})}
+function Mst(){const K=L.mu.length,n=X.length,Nk=Array(K).fill(1e-9),mu=L.mu.map(()=>[0,0]);X.forEach((p,i)=>L.R[i].forEach((r,k)=>{Nk[k]+=r;mu[k][0]+=r*p[0];mu[k][1]+=r*p[1]}));mu.forEach((m,k)=>{m[0]/=Nk[k];m[1]/=Nk[k]});const v=Nk.map(()=>0);X.forEach((p,i)=>L.R[i].forEach((r,k)=>v[k]+=r*((p[0]-mu[k][0])**2+(p[1]-mu[k][1])**2)));return{mu,v:v.map((s,k)=>Math.max(.03,s/(2*Nk[k]))),pi:Nk.map(a=>a/n)}}
+function reset(full){if(full){const K=+$('K').value;L.mu=[[3,8],[6,1.5],[8.5,8]].slice(0,K).map(a=>[...a]);$('w2').style.display=K==3?'':'none'}
+L.v=L.mu.map(()=>+$('var').value);const w=L.mu.map((_,i)=>+$('w'+i).value),s=w.reduce((a,b)=>a+b);L.pi=w.map(x=>x/s);L.R=null;L.old=null;L.ph='';L.hist=[ll()];draw()}
+function tween(tg){return new Promise(done=>{L.old={mu:L.mu.map(a=>[...a]),v:[...L.v]};const f0={mu:L.mu.map(a=>[...a]),v:[...L.v],pi:[...L.pi]};let t=0;L.busy=1;
+(function s(){t++;const u=t/25,e=u*u*(3-2*u);L.mu=f0.mu.map((a,k)=>[a[0]+(tg.mu[k][0]-a[0])*e,a[1]+(tg.mu[k][1]-a[1])*e]);L.v=f0.v.map((a,k)=>a+(tg.v[k]-a)*e);L.pi=f0.pi.map((a,k)=>a+(tg.pi[k]-a)*e);
+if(t<25){draw();requestAnimationFrame(s)}else{L.busy=0;L.ph='M';L.hist.push(ll());draw();done()}})()})}
+function iter(){return new Promise(r=>{E();L.ph='E';draw();setTimeout(()=>tween(Mst()).then(r),450)})}
+function draw(){
+pan($('p1'),()=>'#9fb0e8aa',c=>L.mu.forEach((m,k)=>{c.beginPath();c.arc(m[0]*36,360-m[1]*36,10,0,PI2);c.fillStyle=C[k];c.fill();c.lineWidth=2;c.strokeStyle='#fff';c.stroke();c.fillStyle='#000';c.font='bold 12px sans-serif';c.textAlign='center';c.fillText(k+1,m[0]*36,364-m[1]*36)}));
+const col=i=>{if(!L.R)return'#6b7bb0';const r=L.R[i];return'rgb('+[0,1,2].map(j=>r.reduce((s,x,k)=>s+x*CR[k][j],0)|0)+')'};
+pan($('p2'),col,c=>L.mu.forEach((m,k)=>[1,2].forEach(s=>{c.beginPath();c.arc(m[0]*36,360-m[1]*36,Math.sqrt(L.v[k])*36*s,0,PI2);c.strokeStyle=C[k]+(s>1?'55':'bb');c.lineWidth=1.5;c.stroke()})));
+pan($('p3'),col,c=>L.mu.forEach((m,k)=>{const x=m[0]*36,y=360-m[1]*36;c.beginPath();c.arc(x,y,Math.sqrt(L.v[k])*72,0,PI2);c.fillStyle=C[k]+'22';c.fill();c.strokeStyle=C[k];c.lineWidth=2;c.stroke();
+if(L.old){const o=L.old.mu[k];c.setLineDash([4,4]);c.beginPath();c.moveTo(o[0]*36,360-o[1]*36);c.lineTo(x,y);c.stroke();c.setLineDash([])}c.beginPath();c.arc(x,y,5,0,PI2);c.fillStyle='#fff';c.fill()}),heat);
+const h=L.hist,cv=$('ch'),W=cv.width=600,H=cv.height=200,c=cv.getContext('2d'),mn=Math.min(...h),mx=Math.max(...h),sp=(mx-mn)||1,px=i=>40+i*(W-60)/Math.max(h.length-1,8),py=v=>H-25-(v-mn)/sp*(H-50);
+c.fillStyle='#060b24';c.fillRect(0,0,W,H);c.strokeStyle='#22d3ee';c.lineWidth=2;c.beginPath();h.forEach((v,i)=>i?c.lineTo(px(i),py(v)):c.moveTo(px(i),py(v)));c.stroke();
+h.forEach((v,i)=>{c.fillStyle='#e879f9';c.beginPath();c.arc(px(i),py(v),3,0,PI2);c.fill()});c.fillStyle='#8b9bc7';c.font='11px monospace';c.textAlign='left';c.fillText(mx.toFixed(1),2,py(mx)+12);c.fillText(mn.toFixed(1),2,py(mn)-2);c.fillText('iteration →',W-90,H-6);
+$('inf').innerHTML='<div class="m">Iteration <b>'+(h.length-1)+'</b> · log L = <b>'+h[h.length-1].toFixed(2)+'</b> '+(L.ph=='E'?'· E-step done':L.ph=='M'?'· M-step done':'· initial guess')+'</div><table><tr><th>k<th>π<th>μ<th>σ²'+L.mu.map((m,k)=>'<tr><td style="color:'+C[k]+'">● '+(k+1)+'<td>'+L.pi[k].toFixed(2)+'<td>('+m[0].toFixed(2)+', '+m[1].toFixed(2)+')<td>'+L.v[k].toFixed(2)).join('')+'</table>'}
+$('bE').onclick=()=>{if(L.busy)return;E();L.ph='E';draw()};
+$('bM').onclick=()=>{if(L.busy)return;if(!L.R)E();tween(Mst())};
+$('bI').onclick=()=>{if(!L.busy)iter()};
+$('bR').onclick=async()=>{if(L.busy)return;for(let i=0;i<40;i++){const a=L.hist[L.hist.length-1];await iter();if(L.hist[L.hist.length-1]-a<1e-3)break}};
+$('bX').onclick=()=>{if(!L.busy)reset(1)};$('bN').onclick=()=>{if(L.busy)return;seed=Math.random()*1e9|0;gen();m1d();appv();reset(1)};
+$('K').onchange=()=>{if(!L.busy)reset(1)};['var','w0','w1','w2'].forEach(i=>$(i).oninput=()=>{if(!L.busy)reset(0)});
+let dr=-1;const p1=$('p1'),pt=e=>{const r=p1.getBoundingClientRect();return[(e.clientX-r.left)/r.width*10,10-(e.clientY-r.top)/r.height*10]};
+p1.onpointerdown=e=>{if(L.busy)return;const q=pt(e);let b=.9;dr=-1;L.mu.forEach((m,k)=>{const d=Math.hypot(m[0]-q[0],m[1]-q[1]);if(d<b){b=d;dr=k}});if(dr>=0)p1.setPointerCapture(e.pointerId)};
+p1.onpointermove=e=>{if(dr<0)return;const q=pt(e);L.mu[dr]=[Math.min(10,Math.max(0,q[0])),Math.min(10,Math.max(0,q[1]))];reset(0)};p1.onpointerup=()=>dr=-1;
+/* worked example (1D, exact EM) */
+const X1=[1,2,6.5,8,9.5];let W1;
+function ex(p,D=X1){const R=D.map(x=>{const l=p.mu.map((m,k)=>p.pi[k]*Math.exp(-((x-m)**2)/(2*p.v[k]))/Math.sqrt(PI2*p.v[k])),s=l[0]+l[1];return{x,l,g:l.map(a=>a/s),s}});
+const N=[0,1].map(k=>R.reduce((a,r)=>a+r.g[k],0)),mu=[0,1].map(k=>R.reduce((a,r)=>a+r.g[k]*r.x,0)/N[k]),v=[0,1].map(k=>Math.max(.05,R.reduce((a,r)=>a+r.g[k]*(r.x-mu[k])**2,0)/N[k]));
+return{R,N,ll:R.reduce((a,r)=>a+Math.log(r.s),0),nx:{mu,v,pi:N.map(a=>a/D.length)}}}
+/* games */
+const G=$('game');let S={};
+function res(ok,txt,next){S.ok+=ok;award(ok?20:0);$('gb').disabled=1;$('gm').innerHTML='<p class="'+(ok?'ok':'no')+'">'+(ok?'✔ Correct! +20':'✘ Not quite')+' — '+txt+'</p><button onclick="'+next+'">Next</button>'}
+function fin(t,ok,need,b,fn){G.innerHTML='<h3>'+t+' complete: '+ok+'/5</h3><p>'+(ok>=need?'🏅 Badge earned!':'Get '+need+' right for the badge.')+'</p><button onclick="'+fn+'()">Play again</button>';if(ok>=need)award(0,b)}
+function g1(){S={r:0,ok:0};g1r()}
+function g1r(){if(S.r==5)return fin('🕵️ Detective',S.ok,3,0,'g1');
+const m1=2+Math.random()*2,m2=m1+3+Math.random()*2.5,sd=.8+Math.random()*.8,w=.3+Math.random()*.4,x=m1-.5+Math.random()*(m2-m1+1);
+G.innerHTML='<h3>🕵️ Hidden Cluster Detective · round '+(S.r+1)+'/5</h3><p>Cyan = cluster A, magenta = B. Estimate P(A | x) at the white line, within ±10 points. That is the E-step.</p><canvas id="gc" class="w" style="max-width:600px"></canvas><div class="row"><input id="gg" type="range" min="0" max="100" value="50" style="max-width:340px"><b id="gv">50%</b><button class="p" id="gb">Check</button></div><div id="gm"></div>';
+const q=plot1d($('gc'),m1,m2,sd,w,x);$('gg').oninput=()=>$('gv').textContent=$('gg').value+'%';
+$('gb').onclick=()=>res(Math.abs(+$('gg').value-q.r*100)<=10,'true P(A|x) = '+(q.r*100).toFixed(1)+'%','S.r++;g1r()')}
+function g2(){S={r:0,ok:0};g2r()}
+function g2r(){if(S.r==5)return fin('🎛️ Parameter Master',S.ok,4,1,'g2');
+const xs=[0,0,0,0].map(()=>+(1+Math.random()*8).toFixed(1)),rs=xs.map(()=>+(.05+Math.random()*.9).toFixed(2)),N=rs.reduce((a,b)=>a+b),q=S.r%3,ans=[N,rs.reduce((a,r,i)=>a+r*xs[i],0)/N,N/4][q],tol=[.03,.1,.02][q];
+G.innerHTML='<h3>🎛️ Parameter Master · round '+(S.r+1)+'/5</h3><p>Responsibilities of cluster A for four points. '+['Find N<sub>A</sub> = Σγ.','Find the new mean μ<sub>A</sub> = Σγx / Σγ.','Find the new weight π<sub>A</sub> = N<sub>A</sub> / 4.'][q]+' (tolerance ±'+tol+')</p><div class="tw"><table><tr><th>x<th>γ(A)'+xs.map((x,i)=>'<tr><td>'+x+'<td>'+rs[i]).join('')+'</table></div><div class="row"><input id="ga" type="number" step="any"><button class="p" id="gb">Check</button></div><div id="gm"></div>';
+$('gb').onclick=()=>res(Math.abs(+$('ga').value-ans)<=tol,'answer = '+ans.toFixed(3),'S.r++;g2r()')}
+const ST=['Initialize μ, σ², π','E-step: compute responsibilities γ','M-step: update μ, σ², π','Compute the log-likelihood','Not converged? Go back to the E-step'];
+function g3(){S={a:[],o:[0,1,2,3,4].sort(()=>Math.random()-.5)};g3r()}
+function g3r(msg){G.innerHTML='<h3>🔢 Beat the Iterations</h3><p>Click the steps in the order EM executes them.</p><div class="row">'+S.o.filter(i=>!S.a.includes(i)).map(i=>'<button onclick="g3c('+i+')">'+ST[i]+'</button>').join('')+'</div><ol>'+S.a.map(i=>'<li class="ok">'+ST[i]).join('')+'</ol><p class="no">'+(msg||'')+'</p>';
+if(S.a.length==5){award(50,2);let p={mu:[2,7],v:[1,1],pi:[.5,.5]},l=[];for(let i=1;i<=8;i++){const e=ex(p);l.push('iter '+i+': log L = '+e.ll.toFixed(4));p=e.nx}G.innerHTML+='<p class="ok">Perfect order! +50. Now watch EM converge:</p><pre class="m">'+l.join('\n')+'</pre><button onclick="g3()">Play again</button>'}}
+function g3c(i){if(i==S.a.length){S.a.push(i);g3r()}else g3r('Not yet. What must happen first?')}
+function g4(){const x=[1,2,6],gm=x.map(t=>{const a=Math.exp(-((t-1)**2)/2),b=Math.exp(-((t-5)**2)/2);return a/(a+b)}),N=gm.reduce((a,b)=>a+b),A=[gm[1],gm.reduce((a,r,i)=>a+r*x[i],0)/N,N/3],Tl=[.02,.05,.02];
+G.innerHTML='<h3>👑 Final EM Boss</h3><p>Data x = (1, 2, 6). Two clusters, fixed σ² = 1, π = ½ each, initial μ₁ = 1, μ₂ = 5. Do one full EM iteration for cluster 1.</p><div class="m">a) responsibility γ of cluster 1 for x = 2 <input id="b0" type="number" step="any"><br>b) new μ₁ <input id="b1" type="number" step="any"><br>c) new π₁ <input id="b2" type="number" step="any"></div><div class="row"><button class="p" id="gb">Submit</button></div><div id="gm" class="m">Hint: 𝒩 ∝ exp(−(x−μ)²/2); the constants cancel in γ.</div>';
+$('gb').onclick=()=>{let ok=0;A.forEach((a,i)=>ok+=Math.abs(+$('b'+i).value-a)<=Tl[i]);award(ok*30+(ok==3?40:0),ok==3?3:null);$('gb').disabled=1;$('gm').innerHTML='<p class="'+(ok==3?'ok':'no')+'">'+ok+'/3 correct. γ = '+A[0].toFixed(3)+', μ₁ = '+A[1].toFixed(3)+', π₁ = '+A[2].toFixed(3)+'</p><button onclick="g4()">Retry</button>'}}
+/* boot */
+const heat=c=>{for(let a=0;a<36;a++)for(let b=0;b<36;b++){const x=(a+.5)/3.6,y=(b+.5)/3.6;let s=[0,0,0],t=0;L.mu.forEach((m,k)=>{const d=Math.exp(-((x-m[0])**2+(y-m[1])**2)/(2*L.v[k]))*L.pi[k]/L.v[k];s=s.map((u,j)=>u+d*CR[k][j]);t+=d});c.fillStyle='rgba('+s.map(u=>u/(t||1)|0)+','+Math.min(.75,t*2.2)+')';c.fillRect(a*10,350-b*10,10,10)}};
+let ang=0;function surf(){ang+=.007;const c=$('s3').getContext('2d'),N=24,z=[];c.fillStyle='#060b24';c.fillRect(0,0,600,300);for(let i=0;i<=N;i++){z[i]=[];for(let j=0;j<=N;j++){let s=0;L.mu.forEach((m,k)=>s+=L.pi[k]*Math.exp(-((i*10/N-m[0])**2+(j*10/N-m[1])**2)/(2*L.v[k]))/L.v[k]);z[i][j]=s}}
+const ca=Math.cos(ang),sa=Math.sin(ang),P=(i,j)=>{const x=i*10/N-5,y=j*10/N-5;return[300+(x*ca-y*sa)*34,215+(x*sa+y*ca)*10-z[i][j]*95]};c.lineWidth=1;for(let i=0;i<=N;i++)for(let j=0;j<=N;j++)[[1,0],[0,1]].forEach(([a,b])=>{if(i+a>N||j+b>N)return;const p=P(i,j),q=P(i+a,j+b);c.strokeStyle='hsl('+(200+z[i][j]*120)+',90%,60%)';c.beginPath();c.moveTo(p[0],p[1]);c.lineTo(q[0],q[1]);c.stroke()});requestAnimationFrame(surf)}
+function mvd(){const cv=$('mv'),c=cv.getContext('2d'),W=cv.width=600,H=cv.height=200,e=W1.e,t=+$('mt').value/100,sx=x=>20+x*(W-40)/10,lp=(a,b)=>[0,1].map(k=>a[k]+(b[k]-a[k])*t),mu=lp(W1.mu,e.nx.mu),v=lp(W1.v,e.nx.v),pi=lp(W1.pi,e.nx.pi);c.fillStyle='#060b24';c.fillRect(0,0,W,H);
+[0,1].forEach(k=>{c.beginPath();c.moveTo(sx(0),H-60);for(let i=0;i<=200;i++){const x=i/20;c.lineTo(sx(x),H-60-pi[k]*Math.exp(-((x-mu[k])**2)/(2*v[k]))/Math.sqrt(PI2*v[k])*260)}c.strokeStyle=C[k];c.fillStyle=C[k]+'33';c.lineWidth=2;c.fill();c.stroke();c.setLineDash([4,4]);c.beginPath();c.moveTo(sx(W1.mu[k]),20);c.lineTo(sx(W1.mu[k]),H-50);c.stroke();c.setLineDash([]);c.fillStyle=C[k];c.fillRect(sx(mu[k])-2,20,4,H-70)});
+e.R.forEach(r=>{c.beginPath();c.arc(sx(r.x),H-30,7,0,PI2);c.fillStyle='rgb('+[0,1,2].map(j=>r.g[0]*CR[0][j]+r.g[1]*CR[1][j]|0)+')';c.fill();c.fillStyle='#fff';c.font='10px monospace';c.textAlign='center';c.fillText(r.g[0].toFixed(2),sx(r.x),H-12)})}
+$('mt').oninput=mvd;
+function appv(){document.querySelectorAll('canvas[data-a]').forEach(cv=>{const t=cv.dataset.a,c=cv.getContext('2d');cv.width=300;cv.height=150;c.fillStyle='#060b24';c.fillRect(0,0,300,150);
+if(t=='0'||t=='1')X.forEach((p,i)=>{const h=t=='1'&&i%7==0;c.beginPath();c.arc(p[0]*30,150-p[1]*15,3,0,PI2);if(h){c.strokeStyle='#fff';c.setLineDash([2,2]);c.stroke();c.setLineDash([])}else{c.fillStyle=t=='0'?C[T[i]]:'#6b7bb0';c.fill()}});
+if(t=='2')for(let a=0;a<30;a++)for(let b=0;b<15;b++){const d=Math.hypot(a-15,b-7.5),k=d<5?0:b<4?2:1;c.fillStyle=C[k]+['ff','aa','77'][(a*7+b*3)%3];c.fillRect(a*10,b*10,9,9)}
+if(t=='3')for(let i=0;i<150;i++){const k=Math.floor(i/50),h=(10+25*Math.abs(Math.sin(i*.35+k)))*(1+k*.3);c.fillStyle=C[k];c.fillRect(i*2,75-h,1.6,2*h)}})}
+const HD=[];for(let i=0;i<240;i++)HD.push(rnd()<.5?162+6*gs():176+7*gs());
+let HS,hTrue=0,hTimer;
+function hDraw(){const cv=$('hc'),c=cv.getContext('2d'),W=cv.width=600,H=cv.height=240,lo=140,top=200,nb=30,bw=(top-lo)/nb,bx=x=>30+(x-lo)*(W-50)/(top-lo),a=[],b=[],n=HD.length,R=HS.R;for(let i=0;i<nb;i++){a[i]=0;b[i]=0}
+HD.forEach((x,i)=>{const j=Math.min(nb-1,Math.max(0,Math.floor((x-lo)/bw)));if(R){a[j]+=R[i][0];b[j]+=R[i][1]}else a[j]+=1});
+const ym=Math.max(...a.map((v,i)=>v+b[i]),1)*1.25,sy=v=>H-26-v/ym*(H-46);c.fillStyle='#060b24';c.fillRect(0,0,W,H);
+for(let i=0;i<nb;i++){const x=bx(lo+i*bw),w=(W-50)/nb-1;c.fillStyle=R?C[0]+'cc':'#9fb0e8aa';c.fillRect(x,sy(a[i]),w,sy(0)-sy(a[i]));if(R){c.fillStyle=C[1]+'cc';c.fillRect(x,sy(a[i]+b[i]),w,sy(a[i])-sy(a[i]+b[i]))}}
+const p=HS.p;[0,1].forEach(k=>{c.beginPath();for(let x=lo;x<=top;x+=.5){const y=sy(n*bw*p.pi[k]*Math.exp(-((x-p.mu[k])**2)/(2*p.v[k]))/Math.sqrt(PI2*p.v[k]));x==lo?c.moveTo(bx(x),y):c.lineTo(bx(x),y)}c.strokeStyle=C[k];c.lineWidth=3;c.stroke()});
+c.fillStyle='#8b9bc7';c.font='11px monospace';c.textAlign='center';for(let x=lo;x<=top;x+=10)c.fillText(x+' cm',bx(x),H-8);
+const f=u=>u.toFixed(1);$('hi').innerHTML='<p class="m">Iteration <b>'+HS.it+'</b> · log L = <b>'+f(ex(p,HD).ll)+'</b></p><table><tr><th>group<th>mean μ<th>spread σ<th>share π'+[0,1].map(k=>'<tr><td style="color:'+C[k]+'">● '+(k+1)+'<td>'+f(p.mu[k])+' cm<td>'+f(Math.sqrt(p.v[k]))+' cm<td>'+(p.pi[k]*100).toFixed(0)+'%').join('')+'</table>'+(hTrue?'<p class="ok">Truth used to simulate: μ = 162, 176 cm · σ = 6, 7 cm · 50% / 50%</p>':'')}
+function hReset(){clearInterval(hTimer);HS={p:{mu:[155,185],v:[100,100],pi:[.5,.5]},it:0,R:null};hDraw()}
+function hStep(){const e=ex(HS.p,HD);HS.p=e.nx;HS.it++;HS.R=ex(HS.p,HD).R.map(r=>r.g);hDraw();return e.ll}
+$('hs').onclick=()=>hStep();$('hx').onclick=hReset;$('ht').onclick=()=>{hTrue=!hTrue;hDraw()};
+$('hr').onclick=()=>{clearInterval(hTimer);let last=-1e9;hTimer=setInterval(()=>{const l=hStep();if(Math.abs(l-last)<1e-3||HS.it>80)clearInterval(hTimer);last=l},200)};
+const SD=[],SZ=[];for(let i=0;i<16;i++){const z=i<8?0:1;SZ.push(z);SD.push(Math.min(9.8,Math.max(.2,z?7+1.1*gs():2.8+.9*gs())))}
+let SS={},stAn;
+const sN=(x,m,v)=>Math.exp(-((x-m)**2)/(2*v))/Math.sqrt(PI2*v),cp=p=>({mu:[...p.mu],v:[...p.v],pi:[...p.pi]}),sX=x=>20+x*56,sY=(p,k,x)=>Math.max(12,220-p.pi[k]*sN(x,p.mu[k],p.v[k])*420),pY=i=>232+(i%3)*9;
+const gmm=(p,x)=>{const w=[0,1].map(k=>p.pi[k]*sN(x,p.mu[k],p.v[k])),s=w[0]+w[1];return w.map(a=>a/s)};
+const anim=(n,f)=>new Promise(res=>{let t=0;SS.busy=1;(function s(){t++;f(t/n);if(t<n)requestAnimationFrame(s);else{SS.busy=0;res()}})()});
+function stAcc(){const h=ex(SS.p,SD).R.filter((r,i)=>(r.g[0]>.5?0:1)==SZ[i]).length;return Math.max(h,SD.length-h)/SD.length}
+function warn(){const p=SS.p,w=[];if(Math.abs(p.mu[0]-p.mu[1])<1)w.push('⚠️ Components overlap strongly.');if(Math.min(...p.v)<.12)w.push('⚠️ A component is collapsing: tiny variance fits only a few points.');if(Math.max(...p.v)>9)w.push('⚠️ Huge variance: one curve explains everything and the groups blur.');if(Math.min(...p.pi)<.15)w.push('⚠️ A component has a tiny weight and may die out.');if(SS.done){const a=stAcc();if(a<.8)w.push('⚠️ Converged to a poor local optimum ('+(a*100|0)+'% accuracy). Try another start.')}return w.join(' ')}
+function stDraw(){const cv=$('stc'),c=cv.getContext('2d'),p=SS.p;cv.width=600;cv.height=260;c.fillStyle='#060b24';c.fillRect(0,0,600,260);
+[0,1].forEach(k=>{if(SS.old){c.beginPath();for(let i=0;i<=200;i++){const x=i/20;i?c.lineTo(sX(x),sY(SS.old,k,x)):c.moveTo(sX(x),sY(SS.old,k,x))}c.setLineDash([5,5]);c.strokeStyle=C[k]+'88';c.lineWidth=1.5;c.stroke();c.setLineDash([])}
+c.beginPath();c.moveTo(sX(0),220);for(let i=0;i<=200;i++)c.lineTo(sX(i/20),sY(p,k,i/20));c.lineTo(sX(10),220);c.fillStyle=C[k]+'33';c.fill();c.strokeStyle=C[k];c.lineWidth=2.5;c.stroke();
+const s=Math.min(10,p.mu[k]+Math.sqrt(p.v[k])),mx=sX(p.mu[k]),my=sY(p,k,p.mu[k]);
+c.beginPath();c.arc(mx,my,9,0,PI2);c.fillStyle=C[k];c.fill();c.strokeStyle='#fff';c.lineWidth=2;c.stroke();c.fillStyle='#000';c.font='bold 10px sans-serif';c.textAlign='center';c.fillText('μ'+(k+1),mx,my+3);
+c.save();c.translate(sX(s),sY(p,k,s));c.rotate(.785);c.fillStyle='#fff';c.fillRect(-5,-5,10,10);c.restore()});
+if(SS.hl=='m')[0,1].forEach(k=>{c.strokeStyle='#fff';c.lineWidth=4;c.beginPath();c.moveTo(sX(p.mu[k]),sY(p,k,p.mu[k]));c.lineTo(sX(p.mu[k]),220);c.stroke()});
+if(SS.hl=='s')[0,1].forEach(k=>{const s=Math.sqrt(p.v[k]),y=sY(p,k,p.mu[k]+s);c.strokeStyle='#fff';c.lineWidth=4;c.beginPath();c.moveTo(sX(Math.max(0,p.mu[k]-s)),y);c.lineTo(sX(Math.min(10,p.mu[k]+s)),y);c.stroke()});
+if(SS.hl=='p')[0,1].forEach(k=>{c.beginPath();c.moveTo(sX(0),220);for(let i=0;i<=200;i++)c.lineTo(sX(i/20),sY(p,k,i/20));c.lineTo(sX(10),220);c.fillStyle=C[k]+'99';c.fill()});
+if(SS.guess!=null){c.setLineDash([4,4]);c.strokeStyle='#fbbf24';c.lineWidth=2;c.beginPath();c.moveTo(sX(SS.guess),14);c.lineTo(sX(SS.guess),220);c.stroke();c.setLineDash([]);c.fillStyle='#fbbf24';c.font='11px sans-serif';c.textAlign='center';c.fillText('your guess',sX(SS.guess),10)}
+SD.forEach((x,i)=>{const R=SS.R&&SS.R[i],t=SS.t;let col='#9fb0e8';if(R)col='rgb('+[0,1,2].map(j=>((1-t)*[159,176,232][j]+t*(R[0]*CR[0][j]+R[1]*CR[1][j]))|0)+')';
+if(i==SS.pt){const g=gmm(p,x);[0,1].forEach(k=>{c.beginPath();c.moveTo(sX(x),pY(i));c.lineTo(sX(x),sY(p,k,x));c.strokeStyle=C[k];c.lineWidth=1+4*g[k];c.globalAlpha=.8;c.stroke();c.globalAlpha=1})}
+c.shadowBlur=R?12:0;c.shadowColor=col;c.beginPath();c.arc(sX(x),pY(i),SS.hl=='g'?9:6,0,PI2);c.fillStyle=col;c.fill();c.shadowBlur=0;if(i==SS.pt){c.strokeStyle='#fff';c.lineWidth=2;c.stroke()}});
+c.fillStyle='#8b9bc7';c.font='11px monospace';c.textAlign='center';for(let i=0;i<=10;i++)c.fillText(i,sX(i),256);
+if(SS.hv>=0){const x=SD[SS.hv],g=gmm(p,x),tx=Math.min(430,sX(x)+10),ty=pY(SS.hv)-62;c.fillStyle='#0b1340';c.fillRect(tx,ty,160,50);c.strokeStyle='#22d3ee';c.lineWidth=1;c.strokeRect(tx,ty,160,50);c.textAlign='left';c.font='12px monospace';c.fillStyle='#fff';c.fillText('x = '+x.toFixed(2),tx+8,ty+16);c.fillStyle=C[0];c.fillText('C1 = '+g[0].toFixed(2),tx+8,ty+31);c.fillStyle=C[1];c.fillText('C2 = '+g[1].toFixed(2),tx+8,ty+46)}
+stResp();stLL();$('stW').innerHTML=(SS.msg?'<b>'+SS.msg+'</b> ':'')+warn()}
+function stResp(){const cv=$('src'),c=cv.getContext('2d');cv.width=600;cv.height=150;c.fillStyle='#060b24';c.fillRect(0,0,600,150);
+SD.map((x,i)=>i).sort((a,b)=>SD[a]-SD[b]).forEach((i,j)=>{const x=14+j*33,R=SS.R&&SS.R[i];c.fillStyle=R?C[0]:'#9fb0e855';c.fillRect(x,10,26,120);if(R){c.fillStyle=C[1];c.fillRect(x,10,26,120*R[1])}
+if(i==SS.pt){c.strokeStyle='#fff';c.lineWidth=2;c.strokeRect(x,10,26,120)}c.fillStyle='#8b9bc7';c.font='10px monospace';c.textAlign='center';c.fillText(SD[i].toFixed(1),x+13,146)})}
+function stLL(){const cv=$('slc'),c=cv.getContext('2d'),h=SS.hist.map(e=>e.ll);cv.width=600;cv.height=150;c.fillStyle='#060b24';c.fillRect(0,0,600,150);
+const mn=Math.min(...h),sp=(Math.max(...h)-mn)||1,px=i=>30+i*540/Math.max(h.length-1,6),py=v=>130-(v-mn)/sp*105;c.strokeStyle='#22d3ee';c.lineWidth=2;c.beginPath();h.forEach((v,i)=>i?c.lineTo(px(i),py(v)):c.moveTo(px(i),py(v)));c.stroke();
+h.forEach((v,i)=>{c.beginPath();c.arc(px(i),py(v),i==SS.sel?7:3.5,0,PI2);c.fillStyle=i==SS.sel?'#fff':'#e879f9';c.fill()});c.fillStyle='#8b9bc7';c.font='11px monospace';c.textAlign='left';c.fillText('log L = '+h[SS.sel].toFixed(2)+'  (iteration '+SS.sel+')',8,14)}
+function stTL(){$('stT').innerHTML=SS.hist.map((h,i)=>'<button data-i="'+i+'"'+(i==SS.sel?' class="p"':'')+' style="padding:3px 10px">'+(i?'E'+i+'→M'+i:'Init')+'</button>').join('')+(SS.done?' <b class="ok">✓ CONVERGED</b>':'');$('stY').innerHTML=SS.hist[SS.sel].note}
+function stSel(i){if(SS.busy||(SS.boss&&!SS.done))return;SS.sel=i;SS.p=cp(SS.hist[i].p);SS.R=ex(SS.p,SD).R.map(r=>r.g);SS.t=1;SS.old=null;SS.msg='';stDraw();stTL();const p=SS.p,f=u=>u.toFixed(2);$('stP').innerHTML='<b>🔬 Iteration '+i+'</b><br>μ₁ = '+f(p.mu[0])+' · μ₂ = '+f(p.mu[1])+'<br>σ₁² = '+f(p.v[0])+' · σ₂² = '+f(p.v[1])+'<br>π₁ = '+f(p.pi[0])+' · π₂ = '+f(p.pi[1])+'<br>log L = '+f(SS.hist[i].ll)}
+$('stT').onclick=e=>{const i=e.target.dataset.i;if(i!=null)stSel(+i)};
+$('slc').onclick=e=>{const r=e.target.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*600,i=Math.round((x-30)*Math.max(SS.hist.length-1,6)/540);if(i>=0&&i<SS.hist.length)stSel(i)};
+function stReset(rand){SD.length=16;SZ.length=16;clearInterval(stAn);const p={mu:rand?[1+Math.random()*8,1+Math.random()*8]:[4,6],v:[2,2],pi:[.5,.5]};SS={p,hist:[{p:cp(p),ll:ex(p,SD).ll,note:'Initial guess. Press <b>Watch E-step</b> to ask: how responsible is each curve for each point?'}],sel:0,R:null,t:1,pt:-1,old:null,nx:'E',boss:0,done:0};$('stw').value=.5;$('stP').innerHTML='Click a data point above.';stDraw();stTL()}
+function stUser(){SS.hist=[{p:cp(SS.p),ll:ex(SS.p,SD).ll,note:'You set these parameters by hand. Now run the E-step.'}];SS.sel=0;SS.R=null;SS.old=null;SS.pt=-1;SS.nx='E';SS.done=0;SS.msg='';stDraw();stTL()}
+const stMsg=m=>{SS.msg=m;stDraw()},stTrunc=()=>{SS.hist.length=SS.sel+1;SS.done=0};
+async function stE(){if(SS.busy)return;if(SS.boss&&SS.nx!='E'){stMsg('Boss rule: the M-step comes next!');return}stTrunc();mark('E');SS.R=ex(SS.p,SD).R.map(r=>r.g);SS.t=0;SS.nx='M';SS.old=null;SS.msg='E-step: every point is split between the curves by responsibility.';await anim(26,u=>{SS.t=u;stDraw()})}
+async function stM(){if(SS.busy)return;if(SS.boss&&SS.nx!='M'){stMsg('Boss rule: do the E-step first!');return}stTrunc();mark('M');if(!SS.R){SS.R=ex(SS.p,SD).R.map(r=>r.g);SS.t=1}
+const e=ex(SS.p,SD),f0=cp(SS.p),to=e.nx;SS.old=f0;SS.nx='E';stMsg('C1 received '+e.N[0].toFixed(2)+' effective points, C2 received '+e.N[1].toFixed(2)+'. New μ = responsibility-weighted average.');
+await anim(36,u=>{const s=u*u*(3-2*u);SS.p={mu:f0.mu.map((a,k)=>a+(to.mu[k]-a)*s),v:f0.v.map((a,k)=>a+(to.v[k]-a)*s),pi:f0.pi.map((a,k)=>a+(to.pi[k]-a)*s)};stDraw()});
+const l1=ex(to,SD).ll,d=l1-SS.hist[SS.hist.length-1].ll,f=u=>u.toFixed(2);
+SS.hist.push({p:cp(to),ll:l1,note:'<b>Iteration '+SS.hist.length+'</b><br>C1: μ '+f(f0.mu[0])+' → '+f(to.mu[0])+', the weighted average of the '+f(e.N[0])+' effective points it owns.<br>C2: μ '+f(f0.mu[1])+' → '+f(to.mu[1])+' ('+f(e.N[1])+' points).<br>Log-likelihood rose by <b>'+f(d)+'</b> to '+f(l1)+'.'});
+SS.sel=SS.hist.length-1;SS.R=null;SS.old=null;SS.p=cp(to);SS.msg='';if(Math.abs(d)<.01){SS.done=1;mark('C');EXP.push({it:SS.hist.length-1,ll:l1,a:stAcc(),s:SS.hist[0].p.mu.map(u=>u.toFixed(1)).join('/'),b:SS.boss});stHist();if(SS.boss&&!SS.paid)bossEnd()}stDraw();stTL()}
+async function stRun(){if(SS.busy||SS.boss)return;for(let i=0;i<25&&!SS.done;i++){await stE();await stM()}}
+function bossEnd(){SS.paid=1;const a=stAcc(),it=SS.hist.length-1,xp=Math.round(a*500+Math.max(0,12-it)*30);award(xp,3);
+$('stP').innerHTML='<h3 class="ok">🟢 CONVERGENCE ACHIEVED</h3>Clustering accuracy<div style="background:#14204d;border-radius:6px"><div style="height:14px;border-radius:6px;background:linear-gradient(90deg,#22d3ee,#e879f9);width:'+a*100+'%"></div></div><b>'+(a*100).toFixed(0)+'%</b> · Iterations: '+it+' · Final log L: '+SS.hist[it].ll.toFixed(2)+'<br>XP +'+xp+' · Rank: <b>'+(a>.85?'EM MASTER 👑':'EM Researcher')+'</b>'}
+function stPt(i){SS.pt=i;stDraw();const x=SD[i],p=SS.p,d=[0,1].map(k=>Math.abs(x-p.mu[k])),n=[0,1].map(k=>sN(x,p.mu[k],p.v[k])),w=[0,1].map(k=>p.pi[k]*n[k]),g=gmm(p,x),f=(u,q)=>u.toFixed(q);
+const bar=k=>'<div class="row"><b style="color:'+C[k]+'">C'+(k+1)+'</b><div style="flex:1;background:#14204d;border-radius:6px"><div style="height:12px;border-radius:6px;background:'+C[k]+';width:'+g[k]*100+'%"></div></div><b>'+(g[k]*100).toFixed(0)+'%</b></div>';
+const L1=['<b>Observation x = '+f(x,2)+'</b>','① Distance: |x−μ₁| = '+f(d[0],2)+' · |x−μ₂| = '+f(d[1],2),'② Density: 𝒩₁ = '+f(n[0],4)+' · 𝒩₂ = '+f(n[1],4),'③ Weighted by π: '+f(w[0],4)+' · '+f(w[1],4),'④ Normalize → responsibility: '+f(g[0],3)+' / '+f(g[1],3),bar(0)+bar(1)+'<p class="m">Hard clustering would say <b>'+(g[0]>.5?'C1 = YES, C2 = NO':'C2 = YES, C1 = NO')+'</b>. EM keeps the uncertainty: '+(g[0]*100).toFixed(0)+'% vs '+(g[1]*100).toFixed(0)+'%.</p>'];
+let k=0;clearInterval(stAn);stAn=setInterval(()=>{k++;$('stP').innerHTML=L1.slice(0,k).join('<br>');if(k>=L1.length)clearInterval(stAn)},420)}
+const stc=$('stc');let sdg=null;const spt=e=>{const r=stc.getBoundingClientRect();return[(e.clientX-r.left)/r.width*600,(e.clientY-r.top)/r.height*260]};
+stc.onpointerdown=e=>{if(SS.busy)return;const[qx,qy]=spt(e),p=SS.p;sdg=null;if(SS.await){SS.await=0;SS.guess=Math.min(10,Math.max(0,(qx-20)/56));stPred();return}
+if(!SS.boss)for(let k=0;k<2;k++){const s=Math.min(10,p.mu[k]+Math.sqrt(p.v[k]));if(Math.hypot(qx-sX(p.mu[k]),qy-sY(p,k,p.mu[k]))<16)sdg={k,t:'m'};else if(Math.hypot(qx-sX(s),qy-sY(p,k,s))<14)sdg={k,t:'s'};if(sdg)break}
+if(sdg){stc.setPointerCapture(e.pointerId);return}
+let b=18,bi=-1;SD.forEach((x,i)=>{const d=Math.hypot(qx-sX(x),qy-pY(i));if(d<b){b=d;bi=i}});if(bi>=0)stPt(bi)};
+stc.onpointermove=e=>{if(!sdg){hov(e);return}const x=Math.min(10,Math.max(0,(spt(e)[0]-20)/56)),p=SS.p,k=sdg.k;if(sdg.t=='m')p.mu[k]=x;else p.v[k]=Math.max(.04,(x-p.mu[k])**2);stUser()};stc.onpointerup=()=>sdg=null;
+$('stw').oninput=()=>{if(SS.boss||SS.busy)return;const w=+$('stw').value;SS.p.pi=[w,1-w];stUser()};
+$('stE').onclick=stE;$('stM').onclick=stM;$('stR').onclick=stRun;$('stX').onclick=()=>{if(!SS.busy)stReset(0)};$('stN').onclick=()=>{if(!SS.busy)stReset(1)};
+$('stB').onclick=()=>{if(SS.busy)return;stReset(1);SS.boss=1;stMsg('👾 Boss mode: alternate E-step, M-step by hand until the log-likelihood stops improving. Next: E-step.')};
+const EXP=[],MS={};
+function mark(k){if(MS[k])return;MS[k]=1;const e=document.querySelector('[data-ms="'+k+'"]');e&&e.classList.add('on');if(['learn','E','M','C','math','real','games'].every(x=>MS[x]))mark('master')}
+if(typeof IntersectionObserver!='undefined'){const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)mark(e.target.id=='seg'?'real':e.target.id)}),{threshold:.3});['learn','math','real','seg'].forEach(i=>io.observe($(i)))}
+function hov(e){if(SS.busy)return;const[qx,qy]=spt(e);let b=14,bi=-1;SD.forEach((x,i)=>{const d=Math.hypot(qx-sX(x),qy-pY(i));if(d<b){b=d;bi=i}});if(bi!=SS.hv){SS.hv=bi;stDraw()}}
+stc.onpointerleave=()=>{SS.hv=-1;if(!SS.busy)stDraw()};
+$('stEq').onmouseover=e=>{SS.hl=e.target.dataset.h||'';stDraw()};$('stEq').onmouseleave=()=>{SS.hl='';stDraw()};
+$('stQ').onclick=()=>{if(SS.busy||SS.boss)return;stTrunc();SS.await=1;SS.guess=null;stMsg('🔮 Click on the graph where you think μ₁ will move after the next E + M iteration.')};
+async function stPred(){await stE();await stM();const m=SS.hist[SS.hist.length-1].p.mu[0],e=Math.abs(m-SS.guess),pts=Math.max(0,Math.round(30-e*20));score+=pts;award(0);stMsg('🔮 You guessed μ₁ ≈ '+SS.guess.toFixed(2)+'; EM moved it to '+m.toFixed(2)+'. Error '+e.toFixed(2)+' → +'+pts+' XP')}
+$('stWi').onchange=()=>{if(SS.busy)return;const v=$('stWi').value;if(!v)return;stReset(0);const p=SS.p;if(v=='a')p.mu=[5,5.3];if(v=='b')p.v=[25,25];if(v=='c')p.v=[.02,.02];if(v=='d'){p.pi=[.95,.05];$('stw').value=.9}if(v=='e'){SD.push(9.9);SZ.push(1)}if(v=='f')p.mu=[4.8,5.2];stUser();
+stMsg({a:'Means start almost equal: can EM tell the groups apart? Run it.',b:'Huge variance: every point is shared almost equally.',c:'Near-zero variance: the curves are spikes. Watch for collapse.',d:'One weight is 0.95: component 2 starts nearly dead.',e:'An outlier at x = 9.9 now pulls on the fit. Run EM and compare.',f:'Terrible start: both curves begin in the same place. Run EM, then press Reset to fix the initialization.'}[v]);$('stWi').value=''};
+$('stZb').onclick=()=>{const p=SS.p,s=Math.sqrt((p.v[0]+p.v[1])/2),sep=Math.abs(p.mu[0]-p.mu[1])/s,h=SS.hist,it=h.length-1,dl=h[it].ll-h[0].ll,a=stAcc();
+$('stZ').innerHTML='<ul><li><b>Separation:</b> the means are '+sep.toFixed(1)+' standard deviations apart: '+(sep>3?'clearly separated groups.':sep>1.5?'moderate overlap.':'heavy overlap, so groups are hard to tell apart.')+'</li><li><b>Spread:</b> σ₁² = '+p.v[0].toFixed(2)+', σ₂² = '+p.v[1].toFixed(2)+(Math.min(...p.v)<.12?' (a component is collapsing).':'.')+'</li><li><b>Weights:</b> π = '+p.pi[0].toFixed(2)+' / '+p.pi[1].toFixed(2)+'.</li><li><b>Progress:</b> '+it+' iteration(s); log-likelihood changed by '+dl.toFixed(2)+(SS.done?' and it has converged.':'; not converged yet.')+'</li><li><b>Quality:</b> '+(a*100|0)+'% of points match the hidden truth'+(a<.8?': likely a poor local optimum or heavy overlap.':'.')+'</li></ul>'};
+$('stK').onclick=()=>{let m=[...SS.hist[0].p.mu],as=[],km=0;for(;km<50;){const a=SD.map(x=>Math.abs(x-m[0])<=Math.abs(x-m[1])?0:1);km++;if(a.join()==as.join())break;as=a;m=[0,1].map(k=>{const q=SD.filter((x,i)=>a[i]==k);return q.length?q.reduce((s,x)=>s+x,0)/q.length:m[k]})}
+let p=cp(SS.hist[0].p),l=ex(p,SD).ll,em=1;for(;em<100;em++){p=ex(p,SD).nx;const l2=ex(p,SD).ll;if(Math.abs(l2-l)<.01)break;l=l2}
+const g=ex(p,SD).R.map(r=>r.g);$('stKm').innerHTML='<table><tr><th>x<th>K-Means (hard)<th>EM / GMM (soft)'+SD.map((x,i)=>i).sort((a,b)=>SD[a]-SD[b]).map(i=>'<tr><td>'+SD[i].toFixed(1)+'<td>C'+(as[i]+1)+'<td>'+(g[i][0]*100|0)+'% / '+(g[i][1]*100|0)+'%').join('')+'</table><p class="m">Both started from the same initial means. K-Means: '+(km-1)+' updates, hard assignments, minimizes squared distance. EM: '+em+' iterations, soft assignments, maximizes likelihood. Iteration counts and objectives are not directly comparable as a speed ranking.</p>'};
+function stHist(){$('stH').innerHTML=EXP.length?'<table><tr><th>#<th>start μ<th>iterations<th>final log L<th>accuracy'+EXP.map((e,i)=>'<tr><td>'+(i+1)+(e.b?' 👾':'')+'<td>'+e.s+'<td>'+e.it+'<td>'+e.ll.toFixed(2)+'<td>'+(e.a*100|0)+'%').join('')+'</table>':'<span class="m">No converged experiments yet. Run EM to convergence.</span>'}
+const PS=[['Problem: the group labels are hidden','learn',()=>{}],['A Gaussian mixture models each group as a bell curve','gc0',()=>{}],['E-step: split every point between the curves','stc',async()=>{stReset(0);await stE()}],['M-step: move each curve to its weighted points','stc',async()=>{await stM()}],['Repeat until the log-likelihood stops improving','stc',async()=>{await stRun()}],['Convergence: click the curve to replay any iteration','slc',()=>{}],['Real application: hidden groups in height data','hc',()=>{hReset();$('hr').onclick()}],['Customer segmentation in 3D: drag to rotate','s3d',()=>{sgReset();sgRun()}],['Challenges: games and the final boss','arena',()=>{}]];
+let pIx=0;function pShow(i){pIx=Math.max(0,Math.min(PS.length-1,i));$('pm').style.display='block';$('pt').textContent=(pIx+1)+'/'+PS.length+' · '+PS[pIx][0];$(PS[pIx][1]).scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>PS[pIx][2](),600)}
+$('pm0').onclick=()=>pShow(0);$('pn2').onclick=()=>pShow(pIx+1);$('pp').onclick=()=>pShow(pIx-1);$('px').onclick=()=>$('pm').style.display='none';
+const CD=[],CZ=[];
+function sgGen(){CD.length=0;CZ.length=0;[[2.2,3,8],[6,8,7],[7.5,4,2.2]].forEach((c,k)=>{for(let i=0;i<60;i++){CD.push(c.map(v=>Math.min(10,Math.max(0,v+gs()*.85))));CZ.push(k)}})}
+const SG={mu:[],v:[],pi:[],R:null,hist:[],ph:'',ay:.6,ax:.35,auto:1,truth:0,drag:null,fa:1,busy:0};
+const sgd=(x,k)=>Math.log(SG.pi[k])-((x[0]-SG.mu[k][0])**2+(x[1]-SG.mu[k][1])**2+(x[2]-SG.mu[k][2])**2)/(2*SG.v[k])-1.5*Math.log(PI2*SG.v[k]);
+function sgLL(){let s=0;CD.forEach(x=>{const l=[0,1,2].map(k=>sgd(x,k)),m=Math.max(...l);s+=m+Math.log(l.reduce((a,b)=>a+Math.exp(b-m),0))});return s}
+function sgE(){SG.R=CD.map(x=>{const l=[0,1,2].map(k=>sgd(x,k)),m=Math.max(...l),e=l.map(a=>Math.exp(a-m)),s=e.reduce((a,b)=>a+b);return e.map(a=>a/s)})}
+function sgM(){const n=CD.length,N=[1e-9,1e-9,1e-9],mu=[[0,0,0],[0,0,0],[0,0,0]],v=[0,0,0];CD.forEach((x,i)=>SG.R[i].forEach((r,k)=>{N[k]+=r;for(let d=0;d<3;d++)mu[k][d]+=r*x[d]}));mu.forEach((m,k)=>{for(let d=0;d<3;d++)m[d]/=N[k]});
+CD.forEach((x,i)=>SG.R[i].forEach((r,k)=>v[k]+=r*((x[0]-mu[k][0])**2+(x[1]-mu[k][1])**2+(x[2]-mu[k][2])**2)));return{mu,v:v.map((s,k)=>Math.max(.03,s/(3*N[k]))),pi:N.map(a=>a/n)}}
+function sgReset(){SG.mu=[[4,4,5],[5.5,6,4],[6,4,6]];SG.v=[3,3,3];SG.pi=[1/3,1/3,1/3];SG.R=null;SG.ph='';SG.fa=1;SG.hist=[sgLL()];sgInfo()}
+function sgInfo(){const h=SG.hist;$('sgi').innerHTML='<p class="m">Iteration <b>'+(h.length-1)+'</b> · log L = <b>'+h[h.length-1].toFixed(1)+'</b> '+(SG.ph=='E'?'· E-step: dot colours = membership':SG.ph=='M'?'· M-step: spheres moved':'· initial guess')+'</p><table><tr><th>segment<th>customers<th>age<th>income<th>spend score'+SG.mu.map((m,k)=>{const nm=m[2]>5.5?(m[1]>5.5?'Premium spenders':'Trend-seekers'):(m[1]>5.5?'Cautious high earners':'Budget savers');return'<tr><td style="color:'+C[k]+'">● '+nm+'<td>'+Math.round(SG.pi[k]*CD.length)+'<td>'+(18+5.2*m[0]).toFixed(0)+'<td>$'+(15+12.5*m[1]).toFixed(0)+'k<td>'+(m[2]*10).toFixed(0)}).join('')+'</table>'}
+function sgT(tg){return new Promise(done=>{SG.busy=1;const f0={mu:SG.mu.map(a=>[...a]),v:[...SG.v],pi:[...SG.pi]};let t=0;(function s(){t++;const u=t/30,e=u*u*(3-2*u);SG.mu=f0.mu.map((a,k)=>a.map((q,d)=>q+(tg.mu[k][d]-q)*e));SG.v=f0.v.map((a,k)=>a+(tg.v[k]-a)*e);SG.pi=f0.pi.map((a,k)=>a+(tg.pi[k]-a)*e);if(t<30)requestAnimationFrame(s);else{SG.busy=0;SG.ph='M';SG.hist.push(sgLL());sgInfo();done()}})()})}
+async function sgRun(){if(SG.busy)return;for(let i=0;i<40;i++){const a=SG.hist[SG.hist.length-1];sgE();SG.fa=0;SG.ph='E';sgInfo();await new Promise(r=>setTimeout(r,500));await sgT(sgM());if(SG.hist[SG.hist.length-1]-a<1e-3)break}}
+function sg3(){const cv=$('s3d'),c=cv.getContext('2d'),W=cv.width=600,H=cv.height=420;if(SG.auto&&!SG.drag)SG.ay+=.006;if(SG.fa<1)SG.fa=Math.min(1,SG.fa+.05);
+const ca=Math.cos(SG.ay),sa=Math.sin(SG.ay),cb=Math.cos(SG.ax),sb=Math.sin(SG.ax),pr=(x,y,z)=>{x-=5;y-=5;z-=5;const x1=x*ca+z*sa,z1=-x*sa+z*ca;return[300+x1*38*16/(16+y*sb+z1*cb),215-(y*cb-z1*sb)*38*16/(16+y*sb+z1*cb),y*sb+z1*cb,16/(16+y*sb+z1*cb)]};
+const bgG=c.createRadialGradient(300,210,40,300,210,360);bgG.addColorStop(0,'#0e1a4a');bgG.addColorStop(1,'#050816');c.fillStyle=bgG;c.fillRect(0,0,W,H);
+const ln=(a,b,col,w)=>{const p=pr(...a),q=pr(...b);c.strokeStyle=col;c.lineWidth=w;c.beginPath();c.moveTo(p[0],p[1]);c.lineTo(q[0],q[1]);c.stroke()};
+for(let i=0;i<=10;i+=2){ln([i,0,0],[i,0,10],'#1e2a5a',1);ln([0,0,i],[10,0,i],'#1e2a5a',1)}
+[0,10].forEach(a=>[0,10].forEach(b=>{ln([0,a,b],[10,a,b],'#14204d',1);ln([a,0,b],[a,10,b],'#14204d',1);ln([a,b,0],[a,b,10],'#14204d',1)}));
+ln([0,0,0],[10,0,0],'#8b9bc7',2);ln([0,0,0],[0,10,0],'#8b9bc7',2);ln([0,0,0],[0,0,10],'#8b9bc7',2);
+c.fillStyle='#e6edff';c.font='bold 12px sans-serif';c.textAlign='center';[['Age →',[10.6,0,0]],['Income ↑',[0,10.8,0]],['Spending ↗',[0,0,10.8]]].forEach(([t,a])=>{const p=pr(...a);c.fillText(t,p[0],p[1])});
+const it=[];CD.forEach((x,i)=>it.push({t:0,i,p:pr(...x)}));SG.mu.forEach((m,k)=>it.push({t:1,k,p:pr(...m)}));it.sort((a,b)=>b.p[2]-a.p[2]);
+it.forEach(o=>{const X=o.p[0],Y=o.p[1],f=o.p[3];if(o.t==0){const R=SG.R&&SG.R[o.i];let col='#9fb0e8';if(SG.truth)col=C[CZ[o.i]];else if(R)col='rgb('+[0,1,2].map(j=>((1-SG.fa)*[159,176,232][j]+SG.fa*(R[0]*CR[0][j]+R[1]*CR[1][j]+R[2]*CR[2][j]))|0)+')';
+c.globalAlpha=Math.min(1,.3+.65*f);c.shadowBlur=R?8:0;c.shadowColor=col;c.fillStyle=col;c.beginPath();c.arc(X,Y,2.7*f+1.3,0,PI2);c.fill();c.shadowBlur=0;c.globalAlpha=1}
+else{const k=o.k,r=Math.sqrt(SG.v[k])*38*f,gr=c.createRadialGradient(X-r*.3,Y-r*.3,r*.1,X,Y,r);gr.addColorStop(0,C[k]+'88');gr.addColorStop(1,C[k]+'18');c.fillStyle=gr;c.beginPath();c.arc(X,Y,r,0,PI2);c.fill();c.strokeStyle=C[k];c.lineWidth=1.5;c.stroke();
+c.beginPath();c.arc(X,Y,7*f,0,PI2);c.fillStyle='#fff';c.fill();c.fillStyle='#000';c.font='bold 10px sans-serif';c.fillText(k+1,X,Y+3.5)}});
+requestAnimationFrame(sg3)}
+const s3d=$('s3d');s3d.onpointerdown=e=>{SG.drag={x:e.clientX,y:e.clientY};s3d.setPointerCapture(e.pointerId);s3d.style.cursor='grabbing'};
+s3d.onpointermove=e=>{if(!SG.drag)return;SG.ay+=(e.clientX-SG.drag.x)*.01;SG.ax=Math.max(-1.4,Math.min(1.4,SG.ax+(e.clientY-SG.drag.y)*.01));SG.drag={x:e.clientX,y:e.clientY}};
+s3d.onpointerup=()=>{SG.drag=null;s3d.style.cursor='grab'};
+$('sgE').onclick=()=>{if(SG.busy)return;sgE();SG.fa=0;SG.ph='E';sgInfo()};
+$('sgM').onclick=()=>{if(SG.busy)return;if(!SG.R){sgE();SG.fa=1}sgT(sgM())};
+$('sgR').onclick=sgRun;$('sgX').onclick=()=>{if(!SG.busy)sgReset()};
+$('sgN').onclick=()=>{if(SG.busy)return;seed=Math.random()*1e9|0;sgGen();sgReset()};
+$('sgA').onclick=()=>{SG.auto=!SG.auto;$('sgA').textContent='⟳ Auto-rotate: '+(SG.auto?'on':'off')};
+$('sgT').onclick=()=>{SG.truth=!SG.truth;$('sgT').textContent=SG.truth?'Hide true segments':'Show true segments'};
+let msP=0;
+function mr(){const e=ex(W1),f=(a,n=3)=>a.toFixed(n),r=e.R[msP],x=r.x;W1.e=e;mvd();mcDraw(e);
+const nl=k=>{const s2=W1.v[k],m=W1.mu[k];return'𝒩(x|μ'+(k+1)+',σ²'+(k+1)+') = 1/√(2π·'+f(s2,2)+') · e^(−('+f(x,2)+'−'+f(m,2)+')²/(2·'+f(s2,2)+')) = '+f(1/Math.sqrt(PI2*s2))+' × '+f(Math.exp(-((x-m)**2)/(2*s2)))+' = <b>'+f(sN(x,m,s2),4)+'</b>'},bar=k=>'<div class="row" style="margin:2px 0"><b style="color:'+C[k]+'">γ'+(k+1)+'</b><div style="flex:1;background:#14204d;border-radius:6px"><div style="height:12px;border-radius:6px;background:'+C[k]+';width:'+r.g[k]*100+'%"></div></div><b>'+(r.g[k]*100).toFixed(1)+'%</b></div>';
+$('mpt').innerHTML=X1.map((v,i)=>'<button data-i="'+i+'"'+(i==msP?' class="p"':'')+' style="padding:3px 10px">x'+(i+1)+'</button>').join('');
+$('we').innerHTML='<b>Point x'+(msP+1)+' = '+f(x,2)+'</b><br>'+nl(0)+'<br>'+nl(1)+'<br>π₁𝒩₁ = '+f(W1.pi[0],2)+' × '+f(sN(x,W1.mu[0],W1.v[0]),4)+' = '+f(r.l[0],4)+'<br>π₂𝒩₂ = '+f(W1.pi[1],2)+' × '+f(sN(x,W1.mu[1],W1.v[1]),4)+' = '+f(r.l[1],4)+'<br>γ₁ = '+f(r.l[0],4)+' / ('+f(r.l[0],4)+' + '+f(r.l[1],4)+') = <b>'+f(r.g[0])+'</b><br>'+bar(0)+bar(1);
+const ll2=ex(e.nx).ll;
+$('wm').innerHTML=[0,1].map(k=>'<b style="color:'+C[k]+'">Cluster '+(k+1)+'</b><br>N = Σγ = '+e.R.map(q=>f(q.g[k],2)).join(' + ')+' = <b>'+f(e.N[k],2)+'</b><br>μ = Σγx / N = ('+e.R.map(q=>f(q.g[k],2)+'×'+q.x.toFixed(1)).join(' + ')+') / '+f(e.N[k],2)+' = <b>'+f(e.nx.mu[k])+'</b><br>σ² = Σγ(x−μ)² / N = <b>'+f(e.nx.v[k])+'</b><br>π = N / n = '+f(e.N[k],2)+' / '+X1.length+' = <b>'+f(e.nx.pi[k])+'</b>').join('<hr style="border:0;border-top:1px solid #1e2a5a">')+'<hr style="border:0;border-top:1px solid #1e2a5a">log L: '+f(e.ll)+' → <b>'+f(ll2)+'</b> <span class="'+(ll2>=e.ll-1e-9?'ok':'no')+'">('+(ll2-e.ll>=0?'+':'')+f(ll2-e.ll)+')</span>';
+$('mit').textContent='Iteration '+W1.it+' · log L = '+f(e.ll);
+$('wx').innerHTML='<table><tr><th>xᵢ<th>π₁𝒩₁<th>π₂𝒩₂<th>γᵢ₁<th>γᵢ₂'+e.R.map(q=>'<tr><td>'+q.x.toFixed(1)+'<td>'+f(q.l[0],4)+'<td>'+f(q.l[1],4)+'<td>'+f(q.g[0])+'<td>'+f(q.g[1])).join('')+'</table>'}
+function mcDraw(e){const cv=$('mc'),c=cv.getContext('2d'),W=cv.width=600,H=cv.height=220,sx=x=>20+x*(W-40)/12,by=H-40;c.fillStyle='#060b24';c.fillRect(0,0,W,H);
+[0,1].forEach(k=>{c.beginPath();c.moveTo(sx(0),by);for(let i=0;i<=240;i++){const x=i/20;c.lineTo(sx(x),Math.max(8,by-W1.pi[k]*sN(x,W1.mu[k],W1.v[k])*300))}c.lineTo(sx(12),by);c.fillStyle=C[k]+'33';c.fill();c.strokeStyle=C[k];c.lineWidth=2.5;c.stroke();
+c.setLineDash([5,4]);c.lineWidth=1.5;c.beginPath();c.moveTo(sx(e.nx.mu[k]),16);c.lineTo(sx(e.nx.mu[k]),by);c.stroke();c.setLineDash([]);c.fillStyle=C[k];c.font='11px sans-serif';c.textAlign='center';c.fillText('new μ'+(k+1)+' = '+e.nx.mu[k].toFixed(2),sx(e.nx.mu[k]),11)});
+e.R.forEach((r,i)=>{c.beginPath();c.arc(sx(r.x),by+16,8,0,PI2);c.fillStyle='rgb('+[0,1,2].map(j=>r.g[0]*CR[0][j]+r.g[1]*CR[1][j]|0)+')';c.fill();if(i==msP){c.strokeStyle='#fff';c.lineWidth=2.5;c.stroke()}c.fillStyle='#8b9bc7';c.font='10px monospace';c.fillText('x'+(i+1),sx(r.x),by+36)})}
+$('mc').onclick=e=>{const r=e.target.getBoundingClientRect(),px=(e.clientX-r.left)/r.width*600;let b=30,bi=-1;X1.forEach((v,i)=>{const d=Math.abs(20+v*560/12-px);if(d<b){b=d;bi=i}});if(bi>=0){msP=bi;mr()}};
+$('mpt').onclick=e=>{const i=e.target.dataset.i;if(i!=null){msP=+i;mr()}};
+function msBuild(){const d=[];X1.forEach((x,i)=>d.push(['x'+(i+1),'d'+i,0,12,.1,x]));d.push(['μ₁','m0',0,12,.1,2],['μ₂','m1',0,12,.1,7],['σ²₁','v0',.2,9,.1,1],['σ²₂','v1',.2,9,.1,1],['π₁','p0',.05,.95,.05,.5]);
+$('msl').innerHTML=d.map(a=>'<div><label>'+a[0]+' = <b id="o'+a[1]+'">'+a[5].toFixed(2)+'</b></label><input id="'+a[1]+'" type="range" min="'+a[2]+'" max="'+a[3]+'" step="'+a[4]+'" value="'+a[5]+'"></div>').join('');
+d.forEach(a=>$(a[1]).oninput=()=>{const v=+$(a[1]).value,k=a[1];$('o'+k).textContent=v.toFixed(2);if(k[0]=='d')X1[+k[1]]=v;else if(k[0]=='m')W1.mu[+k[1]]=v;else if(k[0]=='v')W1.v[+k[1]]=v;else W1.pi=[v,1-v];mr()})}
+function msSync(){const m={};X1.forEach((x,i)=>m['d'+i]=x);W1.mu.forEach((x,i)=>m['m'+i]=x);W1.v.forEach((x,i)=>m['v'+i]=x);m.p0=W1.pi[0];for(const k in m){$(k).value=m[k];$('o'+k).textContent=m[k].toFixed(2)}}
+$('wn').onclick=()=>{const n=W1.e.nx;W1={mu:[...n.mu],v:[...n.v],pi:[...n.pi],it:W1.it+1};$('mt').value=0;msSync();mr()};
+$('w10').onclick=()=>{for(let i=0;i<10;i++){const n=ex(W1).nx;W1={...n,it:W1.it+1}}msSync();mr()};
+$('wr').onclick=()=>{[1,2,6.5,8,9.5].forEach((v,i)=>X1[i]=v);W1={mu:[2,7],v:[1,1],pi:[.5,.5],it:0};msSync();mr()};
+document.querySelectorAll('.tt').forEach(s=>{const sh=()=>$('mtip').textContent=s.dataset.tip;s.onmouseover=sh;s.onclick=sh});
+award(0);gen();m1d();appv();reset(1);wu();msBuild();$('wr').onclick();g1();surf();hReset();stReset(0);stHist();sgGen();sgReset();sg3();
+</script></body></html>
